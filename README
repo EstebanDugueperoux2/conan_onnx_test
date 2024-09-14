@@ -1,0 +1,27 @@
+# Reproduce bug on Ubuntu 24.04.1 LTS
+
+docker run --memory=10g --cpus=10 --rm -ti debian:bullseye
+apt -y update
+apt install -y python3-pip cmake ninja-build git vim pkg-config
+pip install --upgrade "conan"
+
+git clone https://github.com/EstebanDugueperoux2/conan_onnx_test.git
+cd conan_onnx_test
+conan create . --build missing -o */*:shared=True -s build_type=Debug --profile:build .conan/profiles/build_profile --profile:host .conan/profiles/build_profile -c tools.system.package_manager:mode=install &> build_shared.log
+
+[ 83%] Built target libprotoc
+Scanning dependencies of target protoc
+[ 83%] Building CXX object CMakeFiles/protoc.dir/src/google/protobuf/compiler/main.cc.o
+[ 84%] Linking CXX executable protoc
+libprotocd.so.3.21.12.0: error: undefined reference to 'descriptor_table_google_2fprotobuf_2fdescriptor_2eproto'
+collect2: error: ld returned 1 exit status
+gmake[2]: *** [CMakeFiles/protoc.dir/build.make:105: protoc-3.21.12.0] Error 1
+gmake[1]: *** [CMakeFiles/Makefile2:102: CMakeFiles/protoc.dir/all] Error 2
+gmake: *** [Makefile:149: all] Error 2
+
+protobuf/3.21.12: ERROR: 
+Package 'f8cb95f61897049a2d0b1b446bb50f86e8449464' build failed
+protobuf/3.21.12: WARN: Build folder /root/.conan2/p/b/protod503fc6a35348/b/build/Debug
+ERROR: protobuf/3.21.12: Error in build() method, line 198
+	cmake.build()
+	ConanException: Error 2 while executing
